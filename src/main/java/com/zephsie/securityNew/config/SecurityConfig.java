@@ -45,7 +45,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/process_login")
                 .defaultSuccessUrl("/hello", true)
-                .failureUrl("/auth/login?error=true");
+                .failureUrl("/auth/login?error=true")
+
+                .and()
+
+                .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/auth/login");
     }
 
     @Override
