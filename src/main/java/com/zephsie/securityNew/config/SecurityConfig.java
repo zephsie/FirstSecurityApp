@@ -1,6 +1,6 @@
 package com.zephsie.securityNew.config;
 
-import com.zephsie.securityNew.services.PersonDetailsService;
+import com.zephsie.securityNew.security.PersonAuthProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -13,24 +13,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-//    private final PersonAuthProvider personAuthProvider;
-//
-//    @Autowired
-//    public SecurityConfig(PersonAuthProvider personAuthProvider) {
-//        this.personAuthProvider = personAuthProvider;
-//    }
-//
-//    @Override
-//    protected void configure(AuthenticationManagerBuilder auth) {
-//        auth.authenticationProvider(personAuthProvider);
-//    }
-
-    private final PersonDetailsService personDetailsService;
+    private final PersonAuthProvider personAuthProvider;
 
     @Autowired
-    public SecurityConfig(PersonDetailsService personDetailsService) {
-        this.personDetailsService = personDetailsService;
+    public SecurityConfig(PersonAuthProvider personAuthProvider) {
+        this.personAuthProvider = personAuthProvider;
     }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) {
+        auth.authenticationProvider(personAuthProvider);
+    }
+
+//    private final PersonDetailsService personDetailsService;
+//
+//    @Autowired
+//    public SecurityConfig(PersonDetailsService personDetailsService) {
+//        this.personDetailsService = personDetailsService;
+//    }
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
@@ -50,14 +50,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
 
                 .logout()
-                .logoutUrl("/logout")
+                .logoutUrl("/process_logout")
                 .logoutSuccessUrl("/auth/login");
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder.userDetailsService(personDetailsService);
-    }
+//    @Override
+//    protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+//        authenticationManagerBuilder.userDetailsService(personDetailsService);
+//    }
 
     @Bean
     public PasswordEncoder getPasswordEncoder() {
