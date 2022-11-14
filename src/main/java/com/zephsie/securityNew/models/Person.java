@@ -25,7 +25,7 @@ public class Person {
     private String username;
 
     @NotEmpty(message = "Password is required")
-    @Size(min = 2, max = 30, message = "Password must be between 2 and 30 characters")
+    @Size(min = 2, max = 100, message = "Password must be between 2 and 100 characters")
     @Column(name = "password")
     private String password;
 
