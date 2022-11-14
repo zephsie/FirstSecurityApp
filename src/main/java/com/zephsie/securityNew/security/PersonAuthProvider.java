@@ -31,12 +31,12 @@ public class PersonAuthProvider implements AuthenticationProvider {
         if (!password.equals(userDetails.getPassword())) {
             throw new BadCredentialsException("Bad credentials");
         }
-
+    
         return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return true;
+        return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
 }
