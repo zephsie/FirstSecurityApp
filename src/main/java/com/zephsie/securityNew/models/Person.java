@@ -29,6 +29,9 @@ public class Person {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "role")
+    private String role;
+
     @NotNull(message = "Age is required")
     @Min(value = 1900, message = "Year must be greater than 1900")
     @Column(name = "year_of_birth")
