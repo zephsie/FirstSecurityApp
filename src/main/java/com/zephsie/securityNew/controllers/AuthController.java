@@ -1,50 +1,95 @@
 package com.zephsie.securityNew.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.zephsie.securityNew.dto.AuthenticationDTO;
+import com.zephsie.securityNew.dto.PersonDTO;
 import com.zephsie.securityNew.models.Person;
+import com.zephsie.securityNew.security.JwtUtil;
 import com.zephsie.securityNew.services.RegisterService;
+import com.zephsie.securityNew.util.PersonDTOConverter;
+import com.zephsie.securityNew.util.PersonErrorResponse;
+import com.zephsie.securityNew.util.PersonValidationException;
 import com.zephsie.securityNew.util.PersonValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
+import java.util.StringJoiner;
 
-@Controller
+@RestController
 @RequestMapping("/auth")
 public class AuthController {
     private final PersonValidator personValidator;
     private final RegisterService registrationService;
+    private final JwtUtil jwtUtil;
+    private final PersonDTOConverter personDTOConverter;
+
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
-    public AuthController(PersonValidator personValidator, RegisterService registrationService) {
+    public AuthController(PersonValidator personValidator, RegisterService registrationService, JwtUtil jwtUtil, PersonDTOConverter personDTOConverter, AuthenticationManager authenticationManager) {
         this.personValidator = personValidator;
         this.registrationService = registrationService;
+        this.jwtUtil = jwtUtil;
+        this.personDTOConverter = personDTOConverter;
+        this.authenticationManager = authenticationManager;
     }
 
-    @GetMapping("/login")
-    public String loginPage() {
-        return "auth/login";
+    @PostMapping("/login")
+    public Map<String, String> login(@RequestBody @Valid AuthenticationDTO authenticationDTO , BindingResult bindingResult) throws JsonProcessingException {
+        if (bindingResult.hasErrors()) {
+            StringJoiner joiner = new StringJoiner(", ");
+
+            bindingResult.getAllErrors().forEach(objectError -> joiner.add(objectError.getDefaultMessage()));
+
+            throw new PersonValidationException(joiner.toString());
+        }
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(authenticationDTO.getUsername(), authenticationDTO.getPassword());
+
+        try {
+            authenticationManager.authenticate(authenticationToken);
+        } catch (AuthenticationException e) {
+            throw new PersonValidationException("Invalid username or password");
+        }
+
+        return Map.of("token", jwtUtil.generateToken(authenticationDTO.getUsername()));
     }
 
-    @GetMapping("/register")
-    public String registerPage(@ModelAttribute("person") Person person) {
-        return "auth/register";
-    }
+    @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
+    public Map<String, String> register(@RequestBody @Valid PersonDTO personDTO, BindingResult bindingResult) {
+        Person person = personDTOConverter.convertToEntity(personDTO);
 
-    @PostMapping("/register")
-    public String register(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult) {
         personValidator.validate(person, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            return "auth/register";
+            StringJoiner joiner = new StringJoiner(", ");
+
+            bindingResult.getAllErrors().forEach(objectError -> joiner.add(objectError.getDefaultMessage()));
+
+            throw new PersonValidationException(joiner.toString());
         }
 
         registrationService.register(person);
 
-        return "redirect:/auth/login";
+        String token = jwtUtil.generateToken(person.getUsername());
+
+        return Map.of("token", token);
+    }
+
+    @ExceptionHandler(PersonValidationException.class)
+    private ResponseEntity<PersonErrorResponse> handleException(PersonValidationException exception) {
+        return ResponseEntity.badRequest().body(new PersonErrorResponse(exception.getMessage(), System.currentTimeMillis()));
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    private ResponseEntity<PersonErrorResponse> handleException(JsonProcessingException e) {
+        return ResponseEntity.badRequest().body(new PersonErrorResponse("Invalid JSON", System.currentTimeMillis()));
     }
 }

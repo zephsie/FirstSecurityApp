@@ -1,15 +1,15 @@
 package com.zephsie.securityNew.controllers;
 
+import com.zephsie.securityNew.models.Person;
 import com.zephsie.securityNew.security.PersonDetails;
 import com.zephsie.securityNew.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 public class HelloController {
 
     private final AdminService adminService;
@@ -19,25 +19,23 @@ public class HelloController {
         this.adminService = adminService;
     }
 
-    @RequestMapping("/hello")
+    @GetMapping("/hello")
     public String sayHello() {
-        return "hello";
+        return "All logged in users can see this";
     }
 
     @GetMapping("/show_user_info")
-    public String showUserInfo() {
+    public Person showUserInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
 
-        System.out.println(personDetails.getPerson());
-
-        return "hello";
+        return personDetails.getPerson();
     }
 
     @GetMapping("/admin")
     public String admin() {
         adminService.doSomething();
-        return "admin";
+        return "Only admin can see this";
     }
 }
