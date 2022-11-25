@@ -17,7 +17,7 @@ public class WorkSchedule {
         log.info("Second task");
     }
 
-    @Scheduled(cron = "*/5 * * * * *")
+    @Scheduled(cron = "*/100 * * * * *")
     public void runThird() {
         log.info("Third task");
     }

@@ -28,7 +28,7 @@ public class HelloController {
     @GetMapping("/open")
     public String open() {
         try {
-            return dummyService.doSomething().get(5, TimeUnit.SECONDS);
+            return dummyService.doSomething().get(0, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             return "error";
         }

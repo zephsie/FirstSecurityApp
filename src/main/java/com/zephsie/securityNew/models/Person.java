@@ -12,6 +12,7 @@ import javax.validation.constraints.Size;
 @Table(name = "person")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Person {
 
     @Id
