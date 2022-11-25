@@ -1,6 +1,5 @@
 package com.zephsie.securityNew.controllers;
 
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zephsie.securityNew.dto.AuthenticationDTO;
 import com.zephsie.securityNew.dto.PersonDTO;
