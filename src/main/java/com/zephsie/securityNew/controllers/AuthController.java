@@ -1,5 +1,6 @@
 package com.zephsie.securityNew.controllers;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zephsie.securityNew.dto.AuthenticationDTO;
 import com.zephsie.securityNew.dto.PersonDTO;
@@ -42,7 +43,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody @Valid AuthenticationDTO authenticationDTO , BindingResult bindingResult) throws JsonProcessingException {
+    public Map<String, String> login(@RequestBody @Valid AuthenticationDTO authenticationDTO , BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             StringJoiner joiner = new StringJoiner(", ");
 

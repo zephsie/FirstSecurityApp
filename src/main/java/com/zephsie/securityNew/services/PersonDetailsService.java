@@ -2,6 +2,7 @@ package com.zephsie.securityNew.services;
 
 import com.zephsie.securityNew.repositories.PeopleRepository;
 import com.zephsie.securityNew.security.PersonDetails;
+import com.zephsie.securityNew.util.Loggable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,6 +19,7 @@ public class PersonDetailsService implements UserDetailsService {
     }
 
 
+    @Loggable
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return peopleRepository.findByUsername(username).map(PersonDetails::new).orElseThrow(() -> new UsernameNotFoundException("User not found"));

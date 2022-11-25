@@ -1,5 +1,6 @@
 package com.zephsie.securityNew.config;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.zephsie.securityNew.security.JwtUtil;
 import com.zephsie.securityNew.services.PersonDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +35,19 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (header != null && !header.isBlank() && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            String username = jwtUtil.validateAndGetClaim(token);
 
-            UserDetails userDetails = personDetailsService.loadUserByUsername(username);
+            String username;
 
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken
-                    (userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+            try {
+                username = jwtUtil.validateAndGetClaim(token);
+            } catch (JWTVerificationException e) {
+                username = null;
+            }
 
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = personDetailsService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }
 
